@@ -1,0 +1,2 @@
+pillow==9.5.0
+model-bakery==1.11.0

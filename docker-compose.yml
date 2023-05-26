@@ -21,3 +21,7 @@ services:
     depends_on:
       - db
       - redis
+
+networks:
+  djangonetwork:
+    driver: bridge

@@ -40,3 +40,37 @@ Build and run the docker image
 ```bash
   docker compose up --build
 ```
+
+Remove the docker image when done playing
+
+```bash
+  docker compose down
+```
+
+### Connect to backend bash in docker
+
+To run the tests follow the next instructions
+
+```bash
+  docker ps
+```
+
+Grab the `IMAGE ID` for `imagify_backend-web` docker image
+
+```bash
+  docker exec -it <IMAGE ID> bash
+```
+
+
+### Once connected
+#### Testing
+
+```bash
+  pipenv run pytest
+```
+
+#### Appling migrations
+
+```bash
+  python manage.py migrate
+```
