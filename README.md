@@ -24,15 +24,15 @@ Create a `.env` file with the following variables:
 
 ```bash
 # Postgres
-POSTGRES_USER=POSTGRES_USER
-POSTGRES_PASSWORD=POSTGRES_PASSWORD
-POSTGRES_DB=POSTGRES_DB_NAME
+POSTGRES_USER=ADMIN
+POSTGRES_PASSWORD=PASSWORD
+POSTGRES_DB=imagify
  
 # Django
-DJANGO_SECRET_KEY="A_DJANGO_SECRET_KEY"
+DJANGO_SECRET_KEY="@(&t2h4zg+0o)m4q^wh4o0&tw4h_960u@s4y5c5e=mbg+s(k&c"
 
 # Redis
-REDIS_LOCATION="REDIS_LOCATION" # use redis://localhost:6379/0 by default
+REDIS_LOCATION="redis://localhost:6379/0"
 ```
 
 Build and run the docker image
