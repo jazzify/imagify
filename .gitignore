@@ -161,3 +161,4 @@ cython_debug/
 .vscode
 docker-compose.debug.yml
 uploaded_images
+staticfiles

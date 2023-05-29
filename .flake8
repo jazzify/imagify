@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 79
 max-complexity = 18
-exclude = imagify_backend/settings.py
+exclude = imagify_backend/settings.py,imagify_backend/settings_test.py
