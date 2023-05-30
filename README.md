@@ -3,9 +3,9 @@
 
 ## Run everywhere
 
-#### Previous requirements:
+### Previous requirements:
 
--  Python 3.11+
+-  Git
 -  Docker 23.0.5+
 
 Clone the project
@@ -27,35 +27,33 @@ Create a `.env` file with the following variables:
 POSTGRES_USER=ADMIN
 POSTGRES_PASSWORD=PASSWORD
 POSTGRES_DB=imagify
- 
-# Django
-DJANGO_SECRET_KEY="@(&t2h4zg+0o)m4q^wh4o0&tw4h_960u@s4y5c5e=mbg+s(k&c"
-
-# Redis
-REDIS_LOCATION="redis://localhost:6379/0"
 ```
 
-Build and run the docker image
-
+Build the docker image and run all the containers (`CTRL + C` to stop them)
 ```bash
   docker compose up --build
 ```
 
-Remove the docker image when done playing
-
+Remove the docker containers when done playing :)
 ```bash
   docker compose down
 ```
 
-### Connect to backend bash in docker
 
-To run the tests follow the next instructions
+## Connect to the backend bash in docker web instance (the one running Django)
+On you local terminal:
 
+You can either run:
+  ```bash
+  docker exec -it imagify_backend-web-1 bash
+  ```
+
+or, run this to get all the containers:
 ```bash
   docker ps
 ```
 
-Grab the `IMAGE ID` for `imagify_backend-web` docker image
+And, grab the `IMAGE ID` for `imagify_backend-web` docker container
 
 ```bash
   docker exec -it <IMAGE ID> bash
@@ -63,14 +61,23 @@ Grab the `IMAGE ID` for `imagify_backend-web` docker image
 
 
 ### Once connected
-#### Testing
 
-```bash
-  pipenv run pytest
-```
+On the docker container bash:
 
-#### Appling migrations
+<details>
+  <summary>Testing</summary>
+  
+  ```bash
+    pipenv run pytest
+  ```
+</details>
 
-```bash
-  python manage.py migrate
-```
+<details>
+  <summary>Appling migrations</summary>
+
+  Note: Migrations are applied automatically while using the `docker compose up` command via the `docker-entrypoint.sh` file
+  
+  ```bash
+    python manage.py migrate
+  ```
+</details>
