@@ -2,10 +2,9 @@ import os
 import shutil
 from io import BytesIO
 
-
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.conf import settings
 import pytest
+from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image
 
 from apps.images.public.lib.constants import Process
