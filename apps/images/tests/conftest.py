@@ -1,12 +1,14 @@
+import os
 import shutil
 from io import BytesIO
 
-import pytest
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.conf import settings
+import pytest
 from PIL import Image
 
-
-from django.conf import settings
+from apps.images.public.lib.constants import Process
 
 
 @pytest.fixture(scope="session")
@@ -32,9 +34,6 @@ def valid_image(
 
     yield image
 
-    with django_db_blocker.unblock():
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-
 
 @pytest.fixture(scope="session")
 def corrupted_image(django_db_blocker):
@@ -47,3 +46,10 @@ def corrupted_image(django_db_blocker):
         )
 
     yield corrupted_uploaded_file
+
+
+def pytest_sessionfinish():
+    shutil.rmtree(f"{settings.MEDIA_ROOT}", ignore_errors=True)
+
+    path = f"{settings.MEDIA_ROOT}/{Process.THUMBNAIL}"
+    os.makedirs(path)

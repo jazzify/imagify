@@ -1,7 +1,7 @@
 import pytest
 
 from apps.images.models import Image
-from apps.images.tests import baker_recipes as images_recipes
+from apps.images.public.tests import baker_recipes as images_recipes
 
 
 @pytest.mark.django_db

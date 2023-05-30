@@ -10,4 +10,4 @@ python manage.py migrate
 
 # Start server
 echo "Starting server"
-gunicorn --bind 0.0.0.0:8000 imagify_backend.wsgi
+gunicorn --reload --bind 0.0.0.0:8000 imagify_backend.wsgi

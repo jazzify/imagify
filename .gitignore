@@ -162,3 +162,4 @@ cython_debug/
 docker-compose.debug.yml
 uploaded_images
 staticfiles
+test_data
