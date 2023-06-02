@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from apps.images.public import services
@@ -21,3 +23,17 @@ def test_handle_image_upload(valid_image, mocker):
         file=valid_image
     )
     mocked_process_image.assert_called_once_with(image=image_model)
+
+
+@pytest.mark.django_db
+def test_get_image_zipfile(mocker):
+    image_uuid_str = str(uuid.uuid4())
+    mocked_generate_image_zipfile = mocker.patch(
+        "apps.images.public.services.images_business_logic.generate_image_zipfile"  # noqa: E501
+    )
+
+    services.get_image_zipfile(image_uuid_str)
+
+    mocked_generate_image_zipfile.assert_called_once_with(
+        image_uuid_str=image_uuid_str
+    )

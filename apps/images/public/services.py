@@ -11,3 +11,9 @@ def handle_image_upload(image: TemporaryUploadedFile) -> UUID:
     )
     images_business_logic.process_image(image=image_model)
     return image_model.uuid
+
+
+def get_image_zipfile(image_uuid_str: str):
+    return images_business_logic.generate_image_zipfile(
+        image_uuid_str=image_uuid_str
+    )
