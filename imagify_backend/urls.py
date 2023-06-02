@@ -28,6 +28,7 @@ urlpatterns = [
     path(
         "auth-api/", include("rest_framework.urls", namespace="rest_framework")
     ),
+    path("django-rq/", include("django_rq.urls")),
     path("", include(router.urls)),
 ]
 # Add the static URL configuration for development purposes

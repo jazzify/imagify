@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_rq",
     "apps.images",
     "apps.image_api",
 ]
@@ -93,12 +94,32 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379/0",
+        "LOCATION": "redis://redis:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
     }
 }
+
+RQ_QUEUES = {
+    "default": {
+        "HOST": "redis",
+        "PORT": 6379,
+        "DB": 0,
+        "DEFAULT_TIMEOUT": 360,
+    },
+    "high": {
+        "HOST": "redis",
+        "PORT": 6379,
+        "DB": 0,
+    },
+    "low": {
+        "HOST": "redis",
+        "PORT": 6379,
+        "DB": 0,
+    },
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -142,13 +163,15 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media settings
-MEDIA_URL = "/uploaded_images/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "uploaded_images/")
+MEDIA_URL = "/uploaded_files/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "uploaded_files/")
 
 
 # Static Files
-STATIC_ROOT = "staticfiles"
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    "static",
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = []
+
+
+# Temporal zip
+TMP_FILES_ROOT = os.path.join(MEDIA_ROOT, "tmp/")

@@ -9,6 +9,17 @@ services:
     env_file:
       - .env
 
+  rq:
+    build: .
+    command: "python manage.py rqworker default"
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+    links:
+      - redis
+
+
   web:
     build:
       context: .
@@ -23,6 +34,9 @@ services:
     depends_on:
       - db
       - redis
+    links:
+      - redis
+
 
 networks:
   djangonetwork:

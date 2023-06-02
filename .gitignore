@@ -159,6 +159,8 @@ cython_debug/
 #.idea/
 .vscode
 docker-compose.debug.yml
-uploaded_images
 staticfiles
 test_data
+uploaded_files/images/*
+uploaded_files/tmp/*
+uploaded_files/thumbnail/*

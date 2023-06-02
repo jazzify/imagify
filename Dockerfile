@@ -16,7 +16,11 @@ COPY . /app
 RUN python -m pip install -r requirements.txt
 RUN pip install pipenv && pipenv install --system --deploy
 
+# Create necessary directories
+RUN mkdir -p uploaded_files/tmp
 RUN mkdir -p uploaded_files/images
+
+# Give some special permisions to upload files to the container
 RUN chgrp -R www-data uploaded_files/
 RUN chmod -R g+w uploaded_files/
 
