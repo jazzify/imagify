@@ -9,22 +9,12 @@ services:
     env_file:
       - .env
 
-  rq:
-    build: .
-    command: "python manage.py rqworker default"
-    volumes:
-      - .:/app
-    depends_on:
-      - web
-    links:
-      - redis
-
-
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    command: /app/docker-entrypoint.sh
+    command: create
+    image: web-image
     env_file:
       - .env
     volumes:
@@ -37,6 +27,14 @@ services:
     links:
       - redis
 
+  rq-worker:
+    image: web-image
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+    command: rq-worker-default
 
 networks:
   djangonetwork:

@@ -29,23 +29,37 @@ POSTGRES_PASSWORD=PASSWORD
 POSTGRES_DB=imagify
 ```
 
-Build the docker image and run all the containers (`CTRL + C` to stop them)
+### Build the image
+Build the docker image and run all the containers (remove the `-d` option to attach to docker console)
 ```bash
-  docker compose up --build
+docker compose build --no-cache
+```
+Start the containers with
+```bash
+docker compose up -d
+```
+  
+#### Collect the static files to serve in public
+```bash
+docker exec -it imagify-web-1 python3 manage.py collectstatic --noinput --clear
+```
+    
+#### Run the database initial migration
+```bash
+docker exec -it imagify-web-1 python3 manage.py migrate
 ```
 
-Remove the docker containers when done playing :)
+### Remove the docker containers when done playing :)
 ```bash
-  docker compose down
+docker compose down
 ```
-
 
 ## Connect to the backend bash in docker web instance (the one running Django)
 On you local terminal:
 
 You can either run:
   ```bash
-  docker exec -it imagify_backend-web-1 bash
+  docker exec -it imagify-web-1 bash
   ```
 
 or, run this to get all the containers:
@@ -53,7 +67,7 @@ or, run this to get all the containers:
   docker ps
 ```
 
-And, grab the `IMAGE ID` for `imagify_backend-web` docker container
+and, grab the `IMAGE ID` for `imagify_backend-web` docker container
 
 ```bash
   docker exec -it <IMAGE ID> bash
