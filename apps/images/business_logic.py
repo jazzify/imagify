@@ -57,7 +57,7 @@ def generate_image_thumbnail(image_path: str) -> str:
     try:
         with Image.open(image_path) as img:
             img.thumbnail((128, 128))
-            img.save(outfile, "JPEG")
+            img.save(outfile, "PNG")
             return outfile
     except Exception as e:
         raise e

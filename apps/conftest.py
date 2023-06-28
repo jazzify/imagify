@@ -19,14 +19,14 @@ def valid_image(
             mode="RGB", size=(200, 200)
         )  # create a new image using PIL
         image_io = BytesIO()  # a BytesIO object for saving image
-        im.save(image_io, "JPEG")  # save the image to image_io
+        im.save(image_io, "PNG")  # save the image to image_io
         image_io.seek(0)
 
         image = InMemoryUploadedFile(
             image_io,
             field_name="tempfile",
-            name="tempfile.jpeg",
-            content_type="image/jpeg",
+            name="tempfile.png",
+            content_type="image/png",
             size=len(image_io.getvalue()),
             charset="utf-8",
         )
