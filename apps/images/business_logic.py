@@ -5,7 +5,7 @@ import zipfile
 import django_rq
 from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from apps.images import providers as images_providers
 from apps.images import redis as images_redis
@@ -14,7 +14,7 @@ from apps.images.public.lib.constants import Process
 
 
 def create_outfile_name(process: str) -> str:
-    return f"{settings.MEDIA_ROOT}{process}/{uuid.uuid4()}.{process}.jpg"
+    return f"{settings.MEDIA_ROOT}{process}/{uuid.uuid4()}.{process}.png"
 
 
 def create_image_from_uploaded_file(file: TemporaryUploadedFile) -> ImageModel:
@@ -24,12 +24,14 @@ def create_image_from_uploaded_file(file: TemporaryUploadedFile) -> ImageModel:
 def process_image(image: ImageModel) -> None:
     image_uuid_str = str(image.uuid)
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
-    thumbnail_outfile = generate_image_thumbnail(image_path=file_path)
+    outfile_thumbnail = generate_image_thumbnail(image_path=file_path)
+    outfile_blur = generate_image_blur(image_path=file_path)
 
     images_redis.store_temporary_data(
         image_uuid_str,
         value=[
-            thumbnail_outfile,
+            outfile_thumbnail,
+            outfile_blur,
         ],
     )
     zip_creation_enqueue(image_uuid_str=image_uuid_str)
@@ -57,6 +59,17 @@ def generate_image_thumbnail(image_path: str) -> str:
     try:
         with Image.open(image_path) as img:
             img.thumbnail((128, 128))
+            img.save(outfile, "PNG")
+            return outfile
+    except Exception as e:
+        raise e
+
+
+def generate_image_blur(image_path: str) -> str:
+    outfile = create_outfile_name(Process.BLUR)
+    try:
+        with Image.open(image_path) as img:
+            img.filter(ImageFilter.BLUR)
             img.save(outfile, "PNG")
             return outfile
     except Exception as e:

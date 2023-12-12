@@ -1,10 +1,11 @@
-import uuid
 import os
 import re
+import uuid
+from unittest.mock import patch
 
 import pytest
 from django.conf import settings
-from PIL import Image
+from PIL import ImageFilter
 
 from apps.images import business_logic as images_business_logic
 from apps.images.public.tests import baker_recipes as images_recipes
@@ -12,7 +13,7 @@ from apps.images.public.tests import baker_recipes as images_recipes
 
 def test_create_outfile_name():
     process = "THUMBNAIL"
-    expected_regex = rf"{settings.MEDIA_ROOT}{process}/[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-5][0-9a-f]{{3}}-[089ab][0-9a-f]{{3}}-[0-9a-f]{{12}}\.{process}\.jpg"  # noqa: E501
+    expected_regex = rf"{settings.MEDIA_ROOT}{process}/[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-5][0-9a-f]{{3}}-[089ab][0-9a-f]{{3}}-[0-9a-f]{{12}}\.{process}\.png"  # noqa: E501
 
     outfile = images_business_logic.create_outfile_name(process)
 
@@ -38,6 +39,9 @@ def test_process_image(mocker):
     mocked_generate_image_thumbnail = mocker.patch(
         "apps.images.business_logic.generate_image_thumbnail"
     )
+    mocked_generate_image_blur = mocker.patch(
+        "apps.images.business_logic.generate_image_blur"
+    )
     mocked_store_temporary_data = mocker.patch(
         "apps.images.business_logic.images_redis.store_temporary_data"
     )
@@ -51,22 +55,12 @@ def test_process_image(mocker):
     mocked_generate_image_thumbnail.assert_called_once_with(
         image_path=file_path
     )
+    mocked_generate_image_blur.assert_called_once_with(
+        image_path=file_path
+    )
     mocked_zip_creation_enqueue.assert_called_once_with(
         image_uuid_str=str(image.uuid)
     )
-
-
-@pytest.mark.django_db
-def test_generate_image_thumbnail():
-    image = images_recipes.base_image.make()
-    file_path = os.path.join(settings.BASE_DIR, image.instance.path)
-
-    outfile = images_business_logic.generate_image_thumbnail(
-        image_path=file_path
-    )
-
-    with Image.open(outfile) as im:
-        assert im.width == 128
 
 
 def test_zip_creation_enqueue(mocker):
@@ -116,3 +110,35 @@ def test_generate_image_zipfile(mocker, file_paths):
     else:
         mocked_zipfile.assert_not_called()
         mocked_write.assert_not_called()
+
+
+@patch("apps.images.business_logic.Image.open")
+@pytest.mark.django_db
+def test_generate_image_thumbnail(image_open_mock, mocker):
+    image = images_recipes.base_image.make()
+    file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
+
+    images_business_logic.generate_image_thumbnail(
+        image_path=file_path
+    )
+
+    image_mock = image_open_mock.return_value.__enter__.return_value
+    image_mock.thumbnail.assert_called_once_with((128, 128))
+    image_mock.save.assert_called_once_with(file_path, "PNG")
+
+
+@patch("apps.images.business_logic.Image.open")
+@pytest.mark.django_db
+def test_generate_image_blur(image_open_mock, mocker):
+    image = images_recipes.base_image.make()
+    file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
+
+    images_business_logic.generate_image_blur(
+        image_path=file_path
+    )
+    image_mock = image_open_mock.return_value.__enter__.return_value
+    image_mock.filter.assert_called_once_with(ImageFilter.BLUR)
+    image_mock.save.assert_called_once_with(file_path, "PNG")
+
