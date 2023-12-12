@@ -4,7 +4,7 @@
 ## Run everywhere
 
 This project is currently using:
-- `django==4.2.1`
+- `django==4.2.7`
 - `python==3.11`
 
 Take a look at the following files to learn more about the project dependencies:
