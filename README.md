@@ -3,6 +3,15 @@
 
 ## Run everywhere
 
+This project is currently using:
+- `django==4.2.1`
+- `python==3.11`
+
+Take a look at the following files to learn more about the project dependencies:
+- Pipfile
+- Dockerfile
+- docker-compose.yml
+
 ### Previous requirements:
 
 -  Git
