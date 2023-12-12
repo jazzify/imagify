@@ -48,7 +48,11 @@ def corrupted_image(django_db_blocker):
 
 
 def pytest_sessionfinish():
+    # Removes all test directories with the images created.
     shutil.rmtree(f"{settings.MEDIA_ROOT}", ignore_errors=True)
 
-    path = f"{settings.MEDIA_ROOT}/{Process.THUMBNAIL}"
-    os.makedirs(path)
+
+    # Creates all test directories for the next test to work.
+    for process in Process:
+        path = f"{settings.MEDIA_ROOT}/{process.value}"
+        os.makedirs(path)
