@@ -5,3 +5,4 @@ from enum import StrEnum, auto
 class Process(StrEnum):
     THUMBNAIL = auto()
     BLUR = auto()
+    BLACK_AND_WHITE = auto()

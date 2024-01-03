@@ -24,14 +24,19 @@ def create_image_from_uploaded_file(file: TemporaryUploadedFile) -> ImageModel:
 def process_image(image: ImageModel) -> None:
     image_uuid_str = str(image.uuid)
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+
+    # Execute multiple processes for the image
     outfile_thumbnail = generate_image_thumbnail(image_path=file_path)
     outfile_blur = generate_image_blur(image_path=file_path)
+    outfile_black_and_white = generate_image_black_and_white(image_path=file_path)
 
+    # Save the temp images path and enqueue its zip file
     images_redis.store_temporary_data(
         image_uuid_str,
         value=[
             outfile_thumbnail,
             outfile_blur,
+            outfile_black_and_white,
         ],
     )
     zip_creation_enqueue(image_uuid_str=image_uuid_str)
@@ -70,6 +75,17 @@ def generate_image_blur(image_path: str) -> str:
     try:
         with Image.open(image_path) as img:
             img.filter(ImageFilter.BLUR)
+            img.save(outfile, "PNG")
+            return outfile
+    except Exception as e:
+        raise e
+
+
+def generate_image_black_and_white(image_path: str) -> str:
+    outfile = create_outfile_name(Process.BLACK_AND_WHITE)
+    try:
+        with Image.open(image_path) as img:
+            img.convert("L")
             img.save(outfile, "PNG")
             return outfile
     except Exception as e:

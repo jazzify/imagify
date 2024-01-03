@@ -142,3 +142,18 @@ def test_generate_image_blur(image_open_mock, mocker):
     image_mock.filter.assert_called_once_with(ImageFilter.BLUR)
     image_mock.save.assert_called_once_with(file_path, "PNG")
 
+
+
+@patch("apps.images.business_logic.Image.open")
+@pytest.mark.django_db
+def test_generate_image_black_and_white(image_open_mock, mocker):
+    image = images_recipes.base_image.make()
+    file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
+
+    images_business_logic.generate_image_black_and_white(
+        image_path=file_path
+    )
+    image_mock = image_open_mock.return_value.__enter__.return_value
+    image_mock.convert.assert_called_once_with("L")
+    image_mock.save.assert_called_once_with(file_path, "PNG")
