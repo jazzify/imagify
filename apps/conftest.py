@@ -10,6 +10,19 @@ from PIL import Image
 from apps.images.public.lib.constants import Process
 
 
+# pytest_sessionstart() was not working for this
+def pytest_configure():
+    # Creates all test directories for the next test to work.
+    for process in Process:
+        path = f"{settings.MEDIA_ROOT}/{process.value}"
+        os.makedirs(path)
+
+
+def pytest_sessionfinish():
+    # Removes all test directories with the images created.
+    shutil.rmtree(f"{settings.MEDIA_ROOT}", ignore_errors=True)
+
+
 @pytest.fixture(scope="session")
 def valid_image(
     django_db_setup, django_db_blocker
@@ -46,13 +59,3 @@ def corrupted_image(django_db_blocker):
 
     yield corrupted_uploaded_file
 
-
-def pytest_sessionfinish():
-    # Removes all test directories with the images created.
-    shutil.rmtree(f"{settings.MEDIA_ROOT}", ignore_errors=True)
-
-
-    # Creates all test directories for the next test to work.
-    for process in Process:
-        path = f"{settings.MEDIA_ROOT}/{process.value}"
-        os.makedirs(path)
