@@ -20,13 +20,13 @@ Take a look at the following files to learn more about the project dependencies:
 Clone the project
 
 ```bash
-  git clone https://github.com/jazzify/imagify.git
+git clone https://github.com/jazzify/imagify.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd imagify_backend
+cd imagify_backend
 ```
 
 Create a `.env` file with the following variables:
@@ -66,19 +66,19 @@ docker compose down
 
 ## Connect to the backend bash in docker web instance (the one running Django)
 On you local terminal, you can run:
-  ```bash
-  docker exec -it imagify-web-1 bash
-  ```
+```bash
+docker exec -it imagify-web-1 bash
+```
 
 Or in two steps, this to get all the containers (1):
 ```bash
-  docker ps
+docker ps
 ```
 
 and, grab the `IMAGE ID` for `imagify_backend-web` docker container (2)
 
 ```bash
-  docker exec -it <IMAGE ID> bash
+docker exec -it <IMAGE ID> bash
 ```
 
 
@@ -88,9 +88,8 @@ On the docker container bash:
 
 <details>
   <summary>Testing</summary>
-  
   ```bash
-    pipenv run pytest
+  pipenv run pytest
   ```
 </details>
 
@@ -100,6 +99,6 @@ On the docker container bash:
   Note: Migrations are applied automatically while using the `docker compose up` command via the `docker-entrypoint.sh` file
   
   ```bash
-    python manage.py migrate
+  python manage.py migrate
   ```
 </details>
