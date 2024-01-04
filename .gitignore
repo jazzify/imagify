@@ -161,14 +161,9 @@ docker-compose.debug.yml
 # Project
 test_data
 
-uploaded_files/images/*
+uploaded_files/*
 !uploaded_files/images/.gitkeep
-
-uploaded_files/tmp/*
 !uploaded_files/tmp/.gitkeep
-
-uploaded_files/thumbnail/*
 !uploaded_files/thumbnail/.gitkeep
-
-uploaded_files/blur/*
 !uploaded_files/blur/.gitkeep
+!uploaded_files/black_and_white/.gitkeep
