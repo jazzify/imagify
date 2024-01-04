@@ -112,7 +112,7 @@ def test_generate_image_zipfile(mocker, file_paths):
         mocked_write.assert_not_called()
 
 
-@patch("apps.images.business_logic.Image.open")
+@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
 def test_generate_image_thumbnail(image_open_mock, mocker):
     image = images_recipes.base_image.make()
@@ -128,7 +128,7 @@ def test_generate_image_thumbnail(image_open_mock, mocker):
     image_mock.save.assert_called_once_with(file_path, "PNG")
 
 
-@patch("apps.images.business_logic.Image.open")
+@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
 def test_generate_image_blur(image_open_mock, mocker):
     image = images_recipes.base_image.make()
@@ -140,11 +140,10 @@ def test_generate_image_blur(image_open_mock, mocker):
     )
     image_mock = image_open_mock.return_value.__enter__.return_value
     image_mock.filter.assert_called_once_with(ImageFilter.BLUR)
-    image_mock.save.assert_called_once_with(file_path, "PNG")
+    image_mock.filter.return_value.save.assert_called_once_with(file_path, "PNG")
 
 
-
-@patch("apps.images.business_logic.Image.open")
+@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
 def test_generate_image_black_and_white(image_open_mock, mocker):
     image = images_recipes.base_image.make()
@@ -156,4 +155,4 @@ def test_generate_image_black_and_white(image_open_mock, mocker):
     )
     image_mock = image_open_mock.return_value.__enter__.return_value
     image_mock.convert.assert_called_once_with("L")
-    image_mock.save.assert_called_once_with(file_path, "PNG")
+    image_mock.convert.return_value.save.assert_called_once_with(file_path, "PNG")

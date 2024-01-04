@@ -74,8 +74,8 @@ def generate_image_blur(image_path: str) -> str:
     outfile = create_outfile_name(Process.BLUR)
     try:
         with Image.open(image_path) as img:
-            img.filter(ImageFilter.BLUR)
-            img.save(outfile, "PNG")
+            new_img = img.filter(ImageFilter.BLUR)
+            new_img.save(outfile, "PNG")
             return outfile
     except Exception as e:
         raise e
@@ -85,8 +85,8 @@ def generate_image_black_and_white(image_path: str) -> str:
     outfile = create_outfile_name(Process.BLACK_AND_WHITE)
     try:
         with Image.open(image_path) as img:
-            img.convert("L")
-            img.save(outfile, "PNG")
+            new_img = img.convert("L")
+            new_img.save(outfile, "PNG")
             return outfile
     except Exception as e:
         raise e
