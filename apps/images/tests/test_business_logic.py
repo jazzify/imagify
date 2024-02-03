@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from django.conf import settings
-from PIL import ImageFilter
+from PIL import Image, ImageFilter
 
 from apps.images import business_logic as images_business_logic
 from apps.images.public.tests import baker_recipes as images_recipes
@@ -30,18 +30,16 @@ def test_create_image_from_uploaded_file(valid_image, mocker):
         file=valid_image
     )
 
-
+@patch("apps.images.business_logic.Image.open", autospec=True)
+@patch("apps.images.business_logic.cfutures.ProcessPoolExecutor", autospec=True)
+@patch("apps.images.business_logic.cfutures.wait", autospec=True)
 @pytest.mark.django_db
-def test_process_image(mocker):
+def test_process_image(image_open_mock, executor_mock, wait_mock, mocker):
     image = images_recipes.base_image.make()
-    file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    image_uuid_str = str(image.uuid)
+    executor_mock = executor_mock.return_value.__enter__.return_value
+    executor_mock.submit.return_value.result.return_value = "Testing"
 
-    mocked_generate_image_thumbnail = mocker.patch(
-        "apps.images.business_logic.generate_image_thumbnail"
-    )
-    mocked_generate_image_blur = mocker.patch(
-        "apps.images.business_logic.generate_image_blur"
-    )
     mocked_store_temporary_data = mocker.patch(
         "apps.images.business_logic.images_redis.store_temporary_data"
     )
@@ -51,15 +49,13 @@ def test_process_image(mocker):
 
     images_business_logic.process_image(image=image)
 
-    mocked_store_temporary_data.assert_called_once()
-    mocked_generate_image_thumbnail.assert_called_once_with(
-        image_path=file_path
-    )
-    mocked_generate_image_blur.assert_called_once_with(
-        image_path=file_path
+    wait_mock.assert_called_once()
+    mocked_store_temporary_data.assert_called_once_with(
+        key=image_uuid_str,
+        value=["Testing","Testing","Testing"] # Once per process
     )
     mocked_zip_creation_enqueue.assert_called_once_with(
-        image_uuid_str=str(image.uuid)
+        image_uuid_str=image_uuid_str
     )
 
 
@@ -112,47 +108,48 @@ def test_generate_image_zipfile(mocker, file_paths):
         mocked_write.assert_not_called()
 
 
-@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
-def test_generate_image_thumbnail(image_open_mock, mocker):
+def test_generate_image_thumbnail(mocker):
     image = images_recipes.base_image.make()
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    PIL_image = Image.open(file_path)
+
+    mocked_thumbnail = mocker.patch("apps.images.business_logic.Image.Image.thumbnail")
+    mocked_save = mocker.patch("apps.images.business_logic.Image.Image.save")
     mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
 
-    images_business_logic.generate_image_thumbnail(
-        image_path=file_path
-    )
+    images_business_logic.generate_image_thumbnail(img=PIL_image)
 
-    image_mock = image_open_mock.return_value.__enter__.return_value
-    image_mock.thumbnail.assert_called_once_with((128, 128))
-    image_mock.save.assert_called_once_with(file_path, "PNG")
+    mocked_thumbnail.assert_called_once_with((128, 128))
+    mocked_save.assert_called_once_with(file_path, "PNG")
 
 
-@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
-def test_generate_image_blur(image_open_mock, mocker):
+def test_generate_image_blur(mocker):
     image = images_recipes.base_image.make()
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    PIL_image = Image.open(file_path)
+
+
+    mocked_filter = mocker.patch("apps.images.business_logic.Image.Image.filter")
     mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
 
-    images_business_logic.generate_image_blur(
-        image_path=file_path
-    )
-    image_mock = image_open_mock.return_value.__enter__.return_value
-    image_mock.filter.assert_called_once_with(ImageFilter.BLUR)
-    image_mock.filter.return_value.save.assert_called_once_with(file_path, "PNG")
+    images_business_logic.generate_image_blur(img=PIL_image)
+
+    mocked_filter.assert_called_once_with(ImageFilter.BLUR)
+    mocked_filter.return_value.save.assert_called_once_with(file_path, "PNG")
 
 
-@patch("apps.images.business_logic.Image.open", autospec=True)
 @pytest.mark.django_db
-def test_generate_image_black_and_white(image_open_mock, mocker):
+def test_generate_image_black_and_white(mocker):
     image = images_recipes.base_image.make()
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
+    PIL_image = Image.open(file_path)
+
+    mocked_convert = mocker.patch("apps.images.business_logic.Image.Image.convert")
     mocker.patch("apps.images.business_logic.create_outfile_name", return_value=file_path)
 
-    images_business_logic.generate_image_black_and_white(
-        image_path=file_path
-    )
-    image_mock = image_open_mock.return_value.__enter__.return_value
-    image_mock.convert.assert_called_once_with("L")
-    image_mock.convert.return_value.save.assert_called_once_with(file_path, "PNG")
+    images_business_logic.generate_image_black_and_white(img=PIL_image)
+
+    mocked_convert.assert_called_once_with("L")
+    mocked_convert.return_value.save.assert_called_once_with(file_path, "PNG")

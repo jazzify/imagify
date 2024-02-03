@@ -1,6 +1,7 @@
 import os
 import uuid
 import zipfile
+from concurrent import futures as cfutures
 
 import django_rq
 from django.conf import settings
@@ -24,21 +25,22 @@ def create_image_from_uploaded_file(file: TemporaryUploadedFile) -> ImageModel:
 def process_image(image: ImageModel) -> None:
     image_uuid_str = str(image.uuid)
     file_path = os.path.join(settings.BASE_DIR, image.instance.path)
-
+    
     # Execute multiple processes for the image
-    outfile_thumbnail = generate_image_thumbnail(image_path=file_path)
-    outfile_blur = generate_image_blur(image_path=file_path)
-    outfile_black_and_white = generate_image_black_and_white(image_path=file_path)
+    with cfutures.ProcessPoolExecutor(max_workers=5) as executor, Image.open(file_path) as img:
+        # Make a copy of the original image
+        edit_img = img.copy()
+        futures = [
+            executor.submit(generate_image_thumbnail, edit_img),
+            executor.submit(generate_image_blur, edit_img),
+            executor.submit(generate_image_black_and_white, edit_img)
+        ]
+        cfutures.wait(futures)
+        images_redis.store_temporary_data(
+            key=image_uuid_str,
+            value=[future.result() for future in futures],
+        )
 
-    # Save the temp images path and enqueue its zip file
-    images_redis.store_temporary_data(
-        image_uuid_str,
-        value=[
-            outfile_thumbnail,
-            outfile_blur,
-            outfile_black_and_white,
-        ],
-    )
     zip_creation_enqueue(image_uuid_str=image_uuid_str)
 
 
@@ -59,34 +61,22 @@ def generate_image_zipfile(image_uuid_str: str) -> None:
             zipf.write(file_path, arcname=file_name)
 
 
-def generate_image_thumbnail(image_path: str) -> str:
+def generate_image_thumbnail(img: Image.Image) -> str:
     outfile = create_outfile_name(Process.THUMBNAIL)
-    try:
-        with Image.open(image_path) as img:
-            img.thumbnail((128, 128))
-            img.save(outfile, "PNG")
-            return outfile
-    except Exception as e:
-        raise e
+    img.thumbnail((128, 128))
+    img.save(outfile, "PNG")
+    return outfile
 
 
-def generate_image_blur(image_path: str) -> str:
+def generate_image_blur(img: Image.Image) -> str:
     outfile = create_outfile_name(Process.BLUR)
-    try:
-        with Image.open(image_path) as img:
-            new_img = img.filter(ImageFilter.BLUR)
-            new_img.save(outfile, "PNG")
-            return outfile
-    except Exception as e:
-        raise e
+    new_img = img.filter(ImageFilter.BLUR)
+    new_img.save(outfile, "PNG")
+    return outfile
 
 
-def generate_image_black_and_white(image_path: str) -> str:
+def generate_image_black_and_white(img: Image.Image) -> str:
     outfile = create_outfile_name(Process.BLACK_AND_WHITE)
-    try:
-        with Image.open(image_path) as img:
-            new_img = img.convert("L")
-            new_img.save(outfile, "PNG")
-            return outfile
-    except Exception as e:
-        raise e
+    new_img = img.convert("L")
+    new_img.save(outfile, "PNG")
+    return outfile
