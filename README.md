@@ -70,13 +70,13 @@ On you local terminal, you can run:
 docker exec -it imagify-web-1 bash
 ```
 
-Or in two steps, this to get all the containers (1):
+Or in two steps: 
+1. Get all the containers:
 ```bash
 docker ps
 ```
 
-and, grab the `IMAGE ID` for `imagify_backend-web` docker container (2)
-
+2. grab the `IMAGE ID` for `web-image` docker container and execute:
 ```bash
 docker exec -it <IMAGE ID> bash
 ```
@@ -90,15 +90,5 @@ On the docker container bash:
   <summary>Testing</summary>
   ```bash
   pipenv run pytest
-  ```
-</details>
-
-<details>
-  <summary>Appling migrations</summary>
-
-  Note: Migrations are applied automatically while using the `docker compose up` command via the `docker-entrypoint.sh` file
-  
-  ```bash
-  python manage.py migrate
   ```
 </details>
